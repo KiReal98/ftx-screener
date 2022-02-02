@@ -1,7 +1,7 @@
 {
   "name": "screener",
   "version": "0.1.0",
-   "homepage": "https://KiReal98.github.io/ftx-screener"
+  "homepage": "https://KiReal98.github.io/ftx-screener",
   "private": true,
   "dependencies": {
     "@testing-library/jest-dom": "^5.16.1",
