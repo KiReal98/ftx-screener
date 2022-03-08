@@ -1,15 +1,15 @@
 {
   "files": {
-    "main.css": "/ftx-screener/static/css/main.3d407c27.css",
-    "main.js": "/ftx-screener/static/js/main.c3e02499.js",
+    "main.css": "/ftx-screener/static/css/main.ea12a89d.css",
+    "main.js": "/ftx-screener/static/js/main.e2fff4d0.js",
     "static/js/787.b7f3480c.chunk.js": "/ftx-screener/static/js/787.b7f3480c.chunk.js",
     "index.html": "/ftx-screener/index.html",
-    "main.3d407c27.css.map": "/ftx-screener/static/css/main.3d407c27.css.map",
-    "main.c3e02499.js.map": "/ftx-screener/static/js/main.c3e02499.js.map",
+    "main.ea12a89d.css.map": "/ftx-screener/static/css/main.ea12a89d.css.map",
+    "main.e2fff4d0.js.map": "/ftx-screener/static/js/main.e2fff4d0.js.map",
     "787.b7f3480c.chunk.js.map": "/ftx-screener/static/js/787.b7f3480c.chunk.js.map"
   },
   "entrypoints": [
-    "static/css/main.3d407c27.css",
-    "static/js/main.c3e02499.js"
+    "static/css/main.ea12a89d.css",
+    "static/js/main.e2fff4d0.js"
   ]
 }
