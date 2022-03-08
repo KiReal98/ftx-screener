@@ -1,5 +1,5 @@
-import React, { useState, useEffect, useRef, Fragment } from "react";
-import Select from "react-select";
+import React, { useState, useEffect, Fragment } from "react";
+import { BallTriangle } from "react-loader-spinner";
 import { getApiAuth, fetchApiData } from "../utils/helpers";
 import { API_KEY, API_SECRET } from "../utils/constants";
 
@@ -7,32 +7,30 @@ import "./ScreenTable.css";
 
 const ScreenTable = () => {
   const [markets, setMarkets] = useState();
-  const [market, setMarket] = useState();
+  const [marketsOrderBook, setMarketsOrderBook] = useState();
   const [orderBook, setOrderBook] = useState();
-  const [totalLimit, setTotalLimit] = useState(50000);
-  const [timeLeft, setTimeLeft] = useState(60);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isInDraftMode, setIsInDraftMode] = useState(true);
+  const [totalLimit, setTotalLimit] = useState();
 
   useEffect(() => {
-    setMarkets(getMarkets());
-    const timer = setTimeout(() => {
-      setTimeLeft(timeLeft - 1);
-    }, 1000);
-
-    return () => clearTimeout(timer);
+    getMarkets();
   }, []);
 
   useEffect(() => {
-    if (market) {
-      fetchApiData(
-        `/markets/${market}/orderbook`,
-        getApiAuth(API_KEY, API_SECRET, "GET", `/markets/${market}/orderbook`)
-      ).then((data) => {
-        if (data && data.result) {
-          setOrderBook(data.result);
-        }
+    if (marketsOrderBook) {
+      Promise.all(marketsOrderBook).then((res) => {
+        const orderBookPerMarket = res.map((result, i) => ({
+          market: markets[i],
+          asks: result.result.asks,
+          bids: result.result.bids,
+        }));
+
+        setOrderBook(orderBookPerMarket);
+        setIsLoading(false);
       });
     }
-  }, [market]);
+  }, [marketsOrderBook]);
 
   const getMarkets = () => {
     fetchApiData(
@@ -40,59 +38,68 @@ const ScreenTable = () => {
       getApiAuth(API_KEY, API_SECRET, "GET", "/markets")
     ).then((marketsData) => {
       if (marketsData && marketsData.result) {
-        const markets = marketsData.result.map((market) => ({
-          value: market.name,
-          label: market.name,
-        }));
+        const marketsOrderbook = marketsData.result.map((market) =>
+          fetch(`https://ftx.com/api/markets/${market.name}/orderbook`).then(
+            (res) => res.json()
+          )
+        );
+        const markets = marketsData.result.map((market) => market.name);
+
         setMarkets(markets);
+        setMarketsOrderBook(marketsOrderbook);
       }
     });
-
-    if (markets && markets.result) {
-      return markets.result.map((market) => ({
-        value: market.name,
-        label: market.name,
-      }));
-    }
   };
 
   const renderAsksBids = () => {
-    if (orderBook && orderBook.asks && orderBook.bids) {
-      const { asks, bids } = orderBook;
-      const limit = totalLimit ? totalLimit : 9999999999;
+    if (orderBook && orderBook.length > 0 && !isInDraftMode) {
+      let count = 0;
+      return orderBook.map((marketObj, i) => {
+        const { market, asks, bids } = marketObj;
+        const limit = totalLimit ? totalLimit : 9999999999;
 
-      return asks.map((order, i) => {
-        const isOdd = i % 2 === 0;
+        const asksWithinLimit = asks.map((order, j) => {
+          const total = Number((order[0] * order[1]).toFixed(3));
+          if (total > limit) {
+            const isOdd = count % 2 === 0 ? "odd" : "";
+            count++;
+            return (
+              <Fragment key={j}>
+                <span className={`item-market positive-${isOdd}`}>
+                  {market}
+                </span>
+                <span className={`item-price ${isOdd}`}>{order[0]}</span>
+                <span className={`item-size ${isOdd}`}>{order[1]}</span>
+                <span className={`item-total positive-${isOdd}`}>{total}</span>
+              </Fragment>
+            );
+          }
+          return "";
+        });
+
+        const bidsWithinLimit = bids.map((order, j) => {
+          const total = Number((order[0] * order[1]).toFixed(3));
+          if (total > limit) {
+            const isOdd = count % 2 === 0 ? "odd" : "";
+            count++;
+            return (
+              <Fragment key={j}>
+                <span className={`item-market negative-${isOdd}`}>
+                  {market}
+                </span>
+                <span className={`item-price ${isOdd}`}>{order[0]}</span>
+                <span className={`item-size ${isOdd}`}>{order[1]}</span>
+                <span className={`item-total negative-${isOdd}`}>{total}</span>
+              </Fragment>
+            );
+          }
+          return "";
+        });
+
         return (
           <Fragment key={i}>
-            <span className={`ask-price ${isOdd ? "odd" : ""}`}>
-              {order[0]}
-            </span>
-            <span className={`ask-size ${isOdd ? "odd" : ""}`}>{order[1]}</span>
-            <span
-              className={`ask-total ${isOdd ? "odd" : ""} ${
-                Number((order[0] * order[1]).toFixed(3)) > limit
-                  ? "positive"
-                  : ""
-              }`}
-            >
-              {Number((order[0] * order[1]).toFixed(3))}
-            </span>
-            <span className={`bid-price ${isOdd ? "odd" : ""}`}>
-              {bids[i][0]}
-            </span>
-            <span className={`bid-size ${isOdd ? "odd" : ""}`}>
-              {bids[i][1]}
-            </span>
-            <span
-              className={`bid-total ${isOdd ? "odd" : ""} ${
-                Number((bids[i][0] * bids[i][1]).toFixed(3)) > limit
-                  ? "positive"
-                  : ""
-              }`}
-            >
-              {Number((bids[i][0] * bids[i][1]).toFixed(3))}
-            </span>
+            {asksWithinLimit}
+            {bidsWithinLimit}
           </Fragment>
         );
       });
@@ -105,20 +112,6 @@ const ScreenTable = () => {
       <div className="header">
         <h2>FTX screener</h2>
         <div className="select-fields">
-          <Select
-            placeholder="Select market..."
-            isClearable
-            isSearchable
-            options={markets}
-            onChange={(e) => {
-              if (e) {
-                setMarket(e.value);
-              } else {
-                setMarket();
-                setOrderBook();
-              }
-            }}
-          />
           <input
             className="total-limit-input"
             type="number"
@@ -128,18 +121,31 @@ const ScreenTable = () => {
             value={totalLimit}
             id="totalLimit"
             placeholder="Enter total limit"
-            onChange={(e) => setTotalLimit(e.target.value)}
+            onChange={(e) => {
+              setTotalLimit(e.target.value);
+              setIsInDraftMode(true);
+            }}
           />
+          <button
+            type="button"
+            className="btn-search"
+            disabled={isLoading || totalLimit > 1000000000}
+            onClick={(e) => setIsInDraftMode(false)}
+          >
+            Find
+          </button>
         </div>
       </div>
-      {market && (
+      {isLoading ? (
+        <div className="loader">
+          <BallTriangle color="#00BFFF" height={100} width={100} />
+        </div>
+      ) : (
         <div className="screener-grid">
-          <span className="ask-price item-header">ASK price</span>
-          <span className="ask-size item-header">ASK size</span>
-          <span className="ask-total item-header">TOTAL</span>
-          <span className="bid-price item-header">BID price</span>
-          <span className="bid-size item-header">BID size</span>
-          <span className="bid-total item-header">TOTAL</span>
+          <span className="item-header">Market</span>
+          <span className="item-header">Price</span>
+          <span className="item-header">Size</span>
+          <span className="item-header">Total</span>
           {renderAsksBids()}
         </div>
       )}

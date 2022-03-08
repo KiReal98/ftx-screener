@@ -10,6 +10,12 @@
   margin: 0;
 }
 
+.loader {
+  display: flex;
+  justify-content: center;
+  margin-top: 50px;
+}
+
 .select-fields {
   width: 50%;
   display: flex;
@@ -31,10 +37,10 @@
 }
 
 .screener-grid {
-  width: 95%;
-  margin: 0 auto;
+  width: 80%;
+  margin: 0 auto 20px;
   display: grid;
-  grid-template-columns: 0.5fr 0.5fr 1fr 0.5fr 0.5fr 1fr;
+  grid-template-columns: 0.5fr 0.5fr 0.5fr 0.5fr;
 }
 
 .item-header {
@@ -44,28 +50,40 @@
   border: 1px solid #000;
 }
 
-.ask-price.item-header,
-.ask-size.item-header,
-.bid-price.item-header,
-.bid-size.item-header {
+.item-header {
   border-right: none;
 }
 
-.ask-total,
-.bid-total {
+.item-total {
   text-align: center;
-}
-
-.bid-price {
-  margin-left: 10px;
 }
 
 .odd {
   background-color: #f2f2f2;
 }
 
-.positive {
-  background-color: #00b500;
+.positive-odd {
+  background-color: #7be495;
+}
+
+.positive- {
+  background-color: #c4ffc4;
+}
+
+.negative-odd {
+  background-color: #ca3433;
+}
+
+.negative- {
+  background-color: #fa8072;
+}
+
+.btn-search {
+  margin: 0 0 0 10px;
+  border-color: #00bfff;
+  background-color: #00bfff;
+  color: #f2f2f2;
+  border-radius: 4px;
 }
 
 @media screen and (max-width: 768px) {
@@ -86,8 +104,12 @@
     box-sizing: border-box;
   }
 
+  .btn-search {
+    margin: 20px 0 0 0;
+  }
+
   .screener-grid {
-    grid-template-columns: repeat(6, 1fr);
+    grid-template-columns: repeat(4, 1fr);
   }
 
   .bid-price {
