@@ -4,6 +4,7 @@
   display: flex;
   justify-content: space-between;
   align-items: center;
+  cursor: default;
 }
 
 .header h2 {
@@ -50,10 +51,6 @@
   border: 1px solid #000;
 }
 
-.item-header {
-  border-right: none;
-}
-
 .item-total {
   text-align: center;
 }
@@ -71,7 +68,7 @@
 }
 
 .negative-odd {
-  background-color: #ca3433;
+  background-color: #c75548;
 }
 
 .negative- {
@@ -79,11 +76,49 @@
 }
 
 .btn-search {
+  font-weight: 600;
   margin: 0 0 0 10px;
   border-color: #00bfff;
   background-color: #00bfff;
   color: #f2f2f2;
   border-radius: 4px;
+}
+
+.btn-search:disabled {
+  background-color: #005a78;
+  border-color: #005a78;
+}
+
+.ask-bid-legend {
+  width: 150px;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  margin: 0 auto 10px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+}
+
+.circle {
+  width: 10px;
+  height: 10px;
+  border-radius: 10px;
+  margin-right: 5px;
+}
+
+.ask-legend {
+  background-color: #7be495;
+}
+
+.bid-legend {
+  background-color: #c75548;
+}
+
+.legend-item {
+  display: flex;
 }
 
 @media screen and (max-width: 768px) {
