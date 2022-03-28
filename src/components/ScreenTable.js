@@ -1,13 +1,12 @@
 import React, { useState, useEffect, Fragment } from "react";
 import { TailSpin } from "react-loader-spinner";
 import { getApiAuth, fetchApiData } from "../utils/helpers";
-import { API_KEY, API_SECRET } from "../utils/constants";
+import { API_KEY, API_SECRET, DEFAULT_MARKETS } from "../utils/constants";
 
 import "./ScreenTable.css";
 
 const ScreenTable = () => {
   const [markets, setMarkets] = useState();
-  const [marketsOrderBook, setMarketsOrderBook] = useState();
   const [orderBook, setOrderBook] = useState();
   const [isLoading, setIsLoading] = useState(true);
   const [isInDraftMode, setIsInDraftMode] = useState(true);
@@ -15,22 +14,14 @@ const ScreenTable = () => {
 
   useEffect(() => {
     getMarkets();
+    getMarketsOrderBook();
+
+    const interval = setInterval(() => {
+      getMarketsOrderBook();
+    }, 60000);
+
+    return () => clearInterval(interval);
   }, []);
-
-  useEffect(() => {
-    if (marketsOrderBook) {
-      Promise.all(marketsOrderBook).then((res) => {
-        const orderBookPerMarket = res.map((result, i) => ({
-          market: markets[i],
-          asks: result.result.asks,
-          bids: result.result.bids,
-        }));
-
-        setOrderBook(orderBookPerMarket);
-        setIsLoading(false);
-      });
-    }
-  }, [marketsOrderBook]);
 
   const getMarkets = () => {
     fetchApiData(
@@ -38,16 +29,32 @@ const ScreenTable = () => {
       getApiAuth(API_KEY, API_SECRET, "GET", "/markets")
     ).then((marketsData) => {
       if (marketsData && marketsData.result) {
-        const marketsOrderbook = marketsData.result.map((market) =>
-          fetch(`https://ftx.com/api/markets/${market.name}/orderbook`).then(
-            (res) => res.json()
-          )
-        );
-        const markets = marketsData.result.map((market) => market.name);
+        const markets = marketsData.result.map((market) => ({
+          label: market.name,
+          value: market.name,
+        }));
 
         setMarkets(markets);
-        setMarketsOrderBook(marketsOrderbook);
       }
+    });
+  };
+
+  const getMarketsOrderBook = async () => {
+    setIsLoading(true);
+    const marketsOrderbook = DEFAULT_MARKETS.map((market) =>
+      fetch(`https://ftx.com/api/markets/${market}/orderbook`).then((res) =>
+        res.json()
+      )
+    );
+    Promise.all(marketsOrderbook).then((res) => {
+      const orderBookPerMarket = res.map((result, i) => ({
+        market: DEFAULT_MARKETS[i],
+        asks: result.result.asks,
+        bids: result.result.bids,
+      }));
+
+      setOrderBook(orderBookPerMarket);
+      setIsLoading(false);
     });
   };
 
