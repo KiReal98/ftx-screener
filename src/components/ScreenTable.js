@@ -40,7 +40,6 @@ const ScreenTable = () => {
   };
 
   const getMarketsOrderBook = async () => {
-    setIsLoading(true);
     const marketsOrderbook = DEFAULT_MARKETS.map((market) =>
       fetch(`https://ftx.com/api/markets/${market}/orderbook`).then((res) =>
         res.json()
